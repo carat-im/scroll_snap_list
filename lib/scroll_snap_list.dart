@@ -195,7 +195,7 @@ class ScrollSnapListState extends State<ScrollSnapList> {
     Future.delayed(Duration.zero, () {
       widget.listController.animateTo(
         location,
-        duration: new Duration(milliseconds: widget.duration),
+        duration: Duration(milliseconds: widget.duration),
         curve: widget.curve,
       );
     });
@@ -379,18 +379,31 @@ class ScrollSnapListState extends State<ScrollSnapList> {
                     });
                   }
 
-                  if (widget.updateOnScroll == true) {
+                  if (widget.updateOnScroll == true
+                    && (scrollInfo.dragDetails != null || widget.listController.position.activity is BallisticScrollActivity)) {
                     // dont snap until after first drag
                     if (isInit) {
                       return true;
                     }
 
-                    if (isInit == false) {
-                      _calcCardLocation(
-                        pixel: scrollInfo.metrics.pixels,
-                        itemSize: widget.itemSize,
-                      );
-                    }
+                    _calcCardLocation(
+                      pixel: scrollInfo.metrics.pixels,
+                      itemSize: widget.itemSize,
+                    );
+                  }
+
+                  if (scrollInfo.dragDetails == null
+                    && widget.listController.position.activity is BallisticScrollActivity
+                    && (scrollInfo.scrollDelta?.abs() ?? 0) <= 1) {
+                    final target = _calcCardLocation(
+                      pixel: scrollInfo.metrics.pixels,
+                      itemSize: widget.itemSize,
+                    );
+                    widget.listController.animateTo(
+                      target,
+                      duration: Duration(milliseconds: widget.duration),
+                      curve: widget.curve,
+                    );
                   }
                 }
                 return !widget.dispatchScrollNotifications;
