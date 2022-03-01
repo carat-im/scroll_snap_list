@@ -160,6 +160,16 @@ class ScrollSnapList extends StatefulWidget {
 }
 
 class ScrollSnapListState extends State<ScrollSnapList> {
+  // from ScrollPhysics
+  static final Tolerance _defaultTolerance = Tolerance(
+    velocity: 1.0 /
+      (0.050 *
+        WidgetsBinding.instance!.window
+          .devicePixelRatio), // logical pixels per second
+    distance: 1.0 /
+      WidgetsBinding.instance!.window.devicePixelRatio, // logical pixels
+  );
+
   //true if initialIndex exists and first drag hasn't occurred
   bool isInit = true;
 
@@ -392,9 +402,10 @@ class ScrollSnapListState extends State<ScrollSnapList> {
                     );
                   }
 
+                  final activity = widget.listController.position.activity;
                   if (scrollInfo.dragDetails == null
-                    && widget.listController.position.activity is BallisticScrollActivity
-                    && (scrollInfo.scrollDelta?.abs() ?? 0) <= 1) {
+                    && activity is BallisticScrollActivity
+                    && activity.velocity.abs() <= _defaultTolerance.velocity + 50) {
                     final target = _calcCardLocation(
                       pixel: scrollInfo.metrics.pixels,
                       itemSize: widget.itemSize,
